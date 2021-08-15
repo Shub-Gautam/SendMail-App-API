@@ -24,7 +24,7 @@ async function sendMail(accessToken, senderEmail, refresh_token) {
       to: `${to}`,
       subject: "hello from gmail using API",
       text: "hello from gmail........",
-      html: "<h1>Welcome to my new redesign........",
+      html: "<h1>Hello from SendMail App........",
     };
 
     const result = await transport.sendMail(mailOptions);
