@@ -1,3 +1,11 @@
+const axios = require("axios");
+
+const client_id =
+  "790734464736-6m1q5ho9pp7uf6vfbv7jk04ms8l7gcpv.apps.googleusercontent.com";
+const redirect_uri = "http://localhost:8000/credentials";
+const client_secret = "9ckklpPF-G8-_hHSxKDPawta";
+const tokenEndpoint = "https://oauth2.googleapis.com/token";
+
 const oAuth = (req, res, next) => {
   var code1 = req.query.code;
 
@@ -11,8 +19,6 @@ const oAuth = (req, res, next) => {
   params.append("code", code1);
   params.append("grant_type", "authorization_code");
   params.append("redirect_uri", redirect_uri);
-
-  //   console.log(params);
 
   axios
     .post(tokenEndpoint, params)

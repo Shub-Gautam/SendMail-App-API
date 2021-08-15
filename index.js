@@ -22,61 +22,57 @@
 // from the url and the used to exchange with AccessToken once we get the accesstoken we
 // call the gmail API to send mail.
 //
+//
+//
+//
 
 // import Node Modules------------------------------------------------------
 const express = require("express");
-const axios = require("axios");
 const fs = require("fs");
 const app = express();
 
 // importing custom function to send mail-----------------------------------
 const sendMail = require("./Services/sendMail");
+// importing files to read data --------------------------------------------
+const personalINFO = require("./Data/personal.json");
+const cred = require("./Data/file.json");
 // importing custom middleware to get accessToken from authToken------------
 const oAuth = require("./middleware/oAuth");
+const pGet = require("./middleware/pGet");
 
 // Declaring Variables -----------------------------------------------------
 const client_id =
   "790734464736-6m1q5ho9pp7uf6vfbv7jk04ms8l7gcpv.apps.googleusercontent.com";
 const redirect_uri = "http://localhost:8000/credentials";
 const response_type = "code";
-const scope = "https://www.googleapis.com/auth/gmail.labels";
-const client_secret = "9ckklpPF-G8-_hHSxKDPawta";
-const tokenEndpoint = "https://oauth2.googleapis.com/token";
+const scope =
+  "https://mail.google.com/+https://www.googleapis.com/auth/gmail.labels+https://www.googleapis.com/auth/userinfo.email+https://www.googleapis.com/auth/userinfo.profile";
 const port = process.env.PORT || 8000;
-var path = "./Data/file.json";
+
+//
+//
+//
+//
+//
+//
+//
 
 //========================== Managing HTTP requests ========================
 
 // Welcome HTTP request ****************************************************
 app.get("/", (request, response) => {
   response.send(
-    `hey there welcome to Send Mail API\n` +
-      `This service has these functionalities:\n` +
-      `1. Go to localhost://8000/login ------ this use OAuth2 to authorize user` +
-      `\n2.After doing step 1 go to locahost://8000/sendmail ----- to send mail`
+    `<h1>hey there welcome to Send Mail API<br>` +
+      `This service has these functionalities:<br>` +
+      `1. Go to localhost:8000/login ------ this use OAuth2 to authorize user` +
+      `<br>2.After doing step 1 go to locahost:8000/sendmail ----- to send mail`
   );
 });
 
 // This is the API endpoint Called when you want to send email**************
 app.get("/sendmail", (req, res) => {
-  //--------Getting Data(Access_token) from "file.json" file--------
-  let accessToken;
-  fs.readFile("./file.json", "utf8", (err, jsonString) => {
-    if (err) {
-      console.log("Error reading file from disk:", err);
-      return;
-    }
-    try {
-      const file = JSON.parse(jsonString);
-      accessToken = file.access_token;
-      //   console.log(A_token);
-    } catch (err) {
-      console.log("Error parsing JSON string:", err);
-    }
-  });
-
-  //-------------calling sendMail function----------------------------
-  sendMail(accessToken)
+  // -------------calling sendMail function----------------------------
+  sendMail(cred.access_token, personalINFO.email, cred.refresh_token)
     .then((result) => console.log("email sent ... ", result))
     .catch((error) => console.log(error.message));
 
@@ -96,7 +92,8 @@ app.get("/login", (request, response) => {
     `response_type=${response_type}&` +
     `redirect_uri=${redirect_uri}&` +
     `client_id=${client_id}&` +
-    `scope=${scope}`;
+    `scope=${scope}&` +
+    `include_granted_scopes=true&access_type=offline`;
   console.log("working");
 
   // https://accounts.google.com/o/oauth2/v2/auth?response_type=code&redirect_uri=https://developers.google.com/oauthplayground&client_id=790734464736-6m1q5ho9pp7uf6vfbv7jk04ms8l7gcpv.apps.googleusercontent.com&scope=https://www.googleapis.com/auth/gmail.labels
@@ -109,17 +106,27 @@ app.get("/login", (request, response) => {
 
 // Middleware used to exchange AuthToken with AccessToken
 app.use(oAuth);
+// Middleware used to get personal info about the user
+app.use(pGet);
 
 // This is the API endpoint to save the user credentials into a*******************
 // file.json file *****************************************************************
 app.get("/credentials", (request, response) => {
-  const code1 = request.query.code;
-  const { access_token } = request.oauth;
   const datatobestored = request.oauth;
+  const personalinfo = request.personalinfo;
 
   //   Storing the data to file.json
   const jsonString = JSON.stringify(datatobestored);
   fs.writeFile("./Data/file.json", jsonString, (err) => {
+    if (err) {
+      console.log("Error writing file", err);
+    } else {
+      console.log("Successfully wrote file");
+    }
+  });
+
+  const jsonString1 = JSON.stringify(personalinfo);
+  fs.writeFile("./Data/personal.json", jsonString1, (err) => {
     if (err) {
       console.log("Error writing file", err);
     } else {
