@@ -16,6 +16,12 @@
 //
 //localhost:8000/sendmail uses that saved file to extract information like accessToken
 //
+// When you go to localhost:8000/login , this api endpoint will redirect you to the googl
+// authorization server after you authorize the application google server will send us a
+// AuthToken (with the help of localhost:8000/credentials) this auth token is thenextracted
+// from the url and the used to exchange with AccessToken once we get the accesstoken we
+// call the gmail API to send mail.
+//
 
 // import Node Modules------------------------------------------------------
 const express = require("express");
