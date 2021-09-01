@@ -1,4 +1,4 @@
-# Send Mail API for Quickwork
+# Send Mail API 
 
 This API helps in authorizing the application by using Oauth2.0 and after authorization you can send email from your account on behalf of this API.
 
